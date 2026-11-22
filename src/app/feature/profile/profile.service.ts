@@ -49,7 +49,10 @@ export class ProfileService {
 	private _uid = '';
 	private _loading: Promise<PersonProfile | null> | null = null;
 
-	/** The person's profile, read once per signed-in person. */
+	/**
+	 * The person's profile, read once per signed-in person. Rejects when it could not be read: that is not the
+	 * same as having no profile, so the caller must not start the onboarding over it. The next call tries again.
+	 */
 	async whenLoaded(): Promise<PersonProfile | null> {
 		const user = await this._auth.whenReady();
 
@@ -62,9 +65,33 @@ export class ProfileService {
 
 		if (this._uid !== user.uid) this._reset(user.uid);
 
-		this._loading ??= this._fetch(user.uid);
+		if (!this._loading) {
+			const loading = this._fetch(user.uid);
+
+			this._loading = loading;
+			loading.catch(() => {
+				if (this._loading === loading) this._loading = null;
+			});
+		}
 
 		return this._loading;
+	}
+
+	/** The saved answers of a profile, ready to be saved again (old drafts kept the university as one text). */
+	answersOf(profile: PersonProfile): ProfileAnswers {
+		return {
+			fullName: profile.fullName,
+			birthDate: profile.birthDate,
+			schoolName: profile.schoolName ?? '',
+			schoolCity: profile.schoolCity ?? '',
+			universitySlug: profile.universitySlug ?? '',
+			universityName: profile.universityName || profile.university || '',
+			universityCity: profile.universityCity ?? '',
+			step: Number.isInteger(profile.step) ? profile.step : 3,
+			lessons: profile.lessons ?? [],
+			otherLessons: profile.otherLessons ?? [],
+			hobbies: profile.hobbies ?? [],
+		};
 	}
 
 	/**
@@ -98,22 +125,20 @@ export class ProfileService {
 		this.profile.set(undefined);
 	}
 
+	/** Throws when the profile could not be read; `null` only means there is none. */
 	private async _fetch(uid: string): Promise<PersonProfile | null> {
 		const db = await this._firebase.firestore();
 		let value: PersonProfile | null = null;
 
 		if (db) {
-			try {
-				const { doc, getDoc } = await import('firebase/firestore');
-				const snapshot = await getDoc(doc(db, 'edudb_profiles', uid));
+			const { doc, getDoc } = await import('firebase/firestore');
+			const snapshot = await getDoc(doc(db, 'edudb_profiles', uid));
 
-				value = snapshot.exists() ? (snapshot.data() as PersonProfile) : null;
-			} catch {
-				value = null;
-			}
+			value = snapshot.exists() ? (snapshot.data() as PersonProfile) : null;
 		}
 
-		this.profile.set(value);
+		// the person may have signed out or switched accounts while it was read
+		if (this._uid === uid) this.profile.set(value);
 
 		return value;
 	}

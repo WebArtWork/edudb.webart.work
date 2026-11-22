@@ -16,8 +16,16 @@ export class RoleService {
 	private readonly _firebase = inject(FirebaseService);
 	private readonly _schools = inject(SchoolsService);
 
+	/** The request as read, with whose it is, so a sign-in as someone else never shows the last person's. */
+	private readonly _request = signal<{ uid: string; value: TeacherRequest | null } | undefined>(
+		undefined,
+	);
 	/** The person's own teacher request: `undefined` until loaded, `null` when there is none. */
-	readonly request = signal<TeacherRequest | null | undefined>(undefined);
+	readonly request = computed<TeacherRequest | null | undefined>(() => {
+		const read = this._request();
+
+		return read && read.uid === this._auth.user()?.uid ? read.value : undefined;
+	});
 	readonly role = computed<Role | null>(() => {
 		const user = this._auth.user();
 
@@ -53,7 +61,7 @@ export class RoleService {
 		const db = await this._firebase.firestore();
 
 		if (!user || !db) {
-			this.request.set(null);
+			this._request.set(user ? { uid: user.uid, value: null } : undefined);
 
 			return;
 		}
@@ -61,9 +69,12 @@ export class RoleService {
 		const { doc, getDoc } = await import('firebase/firestore');
 		const snapshot = await getDoc(doc(db, 'edudb_teacherRequests', user.uid));
 
-		this.request.set(
-			snapshot.exists() ? ({ ...snapshot.data(), uid: user.uid } as TeacherRequest) : null,
-		);
+		this._request.set({
+			uid: user.uid,
+			value: snapshot.exists()
+				? ({ ...snapshot.data(), uid: user.uid } as TeacherRequest)
+				: null,
+		});
 	}
 
 	/** Asks to become a teacher. An admin sees the request on the Access page. */

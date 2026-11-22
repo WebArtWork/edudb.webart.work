@@ -312,5 +312,7 @@
 	"Lower case letters, digits and dashes.": "Малі літери, цифри та дефіси.",
 	"Lessons to improve": "Предмети, які треба підтягнути",
 	"Choose the school subjects you want to get better at.": "Оберіть шкільні предмети, які хочете покращити.",
-	"Other lessons": "Інші предмети"
+	"Other lessons": "Інші предмети",
+	"Your details could not be loaded. Reload the page to try again.": "Не вдалося завантажити ваші дані. Оновіть сторінку, щоб спробувати ще раз.",
+	"That slug was taken, so it was saved as #{{slug}}.": "Цей slug уже зайнятий, тому збережено як #{{slug}}."
 }

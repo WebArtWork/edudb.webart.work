@@ -120,6 +120,16 @@ const EMPTY: School = { slug: '', name: '', city: '', description: '' };
 						Something went wrong. Please try again.
 					</p>
 				}
+				@if (renamed(); as slug) {
+					<p
+						class="text-sm font-semibold text-[var(--c-text-muted)]"
+						role="status"
+						[translate]="'That slug was taken, so it was saved as #{{slug}}.'"
+						[vars]="{ slug }"
+					>
+						That slug was taken, so it was saved as #{{ slug }}.
+					</p>
+				}
 			</form>
 
 			<h2
@@ -198,6 +208,8 @@ export class AdminSchoolsComponent {
 	protected readonly busy = signal(false);
 	protected readonly error = signal(false);
 	protected readonly confirming = signal('');
+	/** The slug a new entry was saved under when the one typed was taken, or empty. */
+	protected readonly renamed = signal('');
 	/** The people who chose the school being edited: one of them can be made its director. */
 	protected readonly candidates = signal<Student[]>([]);
 	protected readonly valid = computed(() => {
@@ -238,18 +250,24 @@ export class AdminSchoolsComponent {
 
 		this.busy.set(true);
 		this.error.set(false);
+		this.renamed.set('');
 
 		try {
 			const draft = this.draft();
+			const creating = !this.editing();
 
-			await this.schools.save({
-				slug: draft.slug,
-				name: draft.name.trim(),
-				city: draft.city.trim(),
-				description: draft.description.trim(),
-				directorUid: draft.directorUid ?? '',
-			});
+			const slug = await this.schools.save(
+				{
+					slug: draft.slug,
+					name: draft.name.trim(),
+					city: draft.city.trim(),
+					description: draft.description.trim(),
+					directorUid: draft.directorUid ?? '',
+				},
+				creating,
+			);
 			this.reset();
+			this.renamed.set(creating && slug !== draft.slug ? slug : '');
 		} catch {
 			this.error.set(true);
 		} finally {

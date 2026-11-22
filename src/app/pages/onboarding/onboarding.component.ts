@@ -350,7 +350,7 @@ const split = (text: string): string[] =>
 					<button
 						type="submit"
 						class="theme-interactive theme-focus inline-flex min-h-12 items-center rounded-full bg-[var(--c-primary)] px-5 text-sm font-semibold text-[var(--c-on-primary)] disabled:opacity-60"
-						[disabled]="saving()"
+						[disabled]="saving() || loadFailed()"
 						[translate]="step() < total ? 'Continue' : 'Finish'"
 					>
 						{{ step() < total ? 'Continue' : 'Finish' }}
@@ -392,6 +392,10 @@ export class OnboardingComponent {
 	protected readonly otherHobbies = signal('');
 	protected readonly saving = signal(false);
 	protected readonly error = signal('');
+	/** The saved answers could not be read: nothing is saved, so they are not overwritten. */
+	protected readonly loadFailed = signal(false);
+	/** The school from the list the person is shown on (edudb_users), or empty. */
+	private _listedSchool = '';
 
 	protected readonly age = computed(() => ageOf(this.birthDate()));
 	/** Under 18: only the school is asked. */
@@ -407,10 +411,21 @@ export class OnboardingComponent {
 
 	/** Fills the form from the answers saved so far, and continues from the step after the first one. */
 	private async _restore() {
-		const [user, saved] = await Promise.all([
-			this._auth.whenReady(),
-			this._profiles.whenLoaded(),
-		]);
+		let user: Awaited<ReturnType<AuthService['whenReady']>>;
+		let saved: Awaited<ReturnType<ProfileService['whenLoaded']>>;
+
+		try {
+			[user, saved] = await Promise.all([
+				this._auth.whenReady(),
+				this._profiles.whenLoaded(),
+			]);
+		} catch {
+			// saving now would overwrite answers that could not be read
+			this.loadFailed.set(true);
+			this.error.set('Your details could not be loaded. Reload the page to try again.');
+
+			return;
+		}
 
 		if (saved) {
 			this.fullName.set(saved.fullName);
@@ -448,10 +463,12 @@ export class OnboardingComponent {
 			this.fullName.set(user.displayName);
 		}
 
-		if (user && !saved?.schoolName) {
+		if (user) {
 			const school = await this.schools.chosen(user.uid).catch(() => '');
 
-			if (school && !this.school()) this.school.set(school);
+			this._listedSchool = school;
+
+			if (school && !saved?.schoolName && !this.school()) this.school.set(school);
 		}
 	}
 
@@ -474,6 +491,9 @@ export class OnboardingComponent {
 
 	protected async next(event: Event) {
 		event.preventDefault();
+
+		if (this.loadFailed()) return;
+
 		this.error.set('');
 
 		if (this.step() === 1) {
@@ -555,15 +575,20 @@ export class OnboardingComponent {
 		}
 	}
 
-	/** The school from the list is a public document (the school page lists its students). */
+	/**
+	 * The school from the list is a public document (the school page lists its students). A school typed by the
+	 * person, or none, takes them off the school page they were on.
+	 */
 	private async _chooseSchool(): Promise<boolean> {
 		const user = await this._auth.whenReady();
-		const slug = this.school();
+		const slug = this.school() === OTHER ? '' : this.school();
 
-		if (!user || !slug || slug === OTHER) return true;
+		// no school now and none before: there is nothing to write
+		if (!user || (!slug && !this._listedSchool)) return true;
 
 		try {
 			await this.schools.choose(user, slug, this.minor());
+			this._listedSchool = slug;
 
 			return true;
 		} catch {

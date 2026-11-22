@@ -43,6 +43,8 @@ export class TeachersService {
 			this.failed.set(false);
 		} catch {
 			this.failed.set(true);
+			// the next load tries again
+			this._loading = null;
 		} finally {
 			this.loaded.set(true);
 		}

@@ -71,6 +71,11 @@ import { UniversitiesService } from '../../feature/universities/universities.ser
 						}
 					</div>
 				</div>
+				@if (profileFailed()) {
+					<p class="mb-6 font-semibold text-red-600 dark:text-red-400" role="alert" translate>
+						Your details could not be loaded. Reload the page to try again.
+					</p>
+				}
 				@if (profiles.profile(); as about) {
 					<h2
 						class="mb-3 text-2xl font-bold tracking-[-0.02em] text-[var(--c-text-strong)]"
@@ -386,6 +391,8 @@ export class ProfileComponent {
 	protected readonly school = signal('');
 	protected readonly savingSchool = signal(false);
 	protected readonly schoolSaved = signal(false);
+	/** The private details could not be read (the guard lets the person in, so nothing is overwritten). */
+	protected readonly profileFailed = signal(false);
 	protected readonly photo = computed(() => {
 		const url = this.user()?.photoURL;
 
@@ -428,7 +435,8 @@ export class ProfileComponent {
 				.universities()
 				.find((item) => item.slug === about.universitySlug);
 
-			return found ? placeLabel(found) : about.universitySlug;
+			// an admin may have removed the university from the list since
+			return found ? placeLabel(found) : '';
 		}
 
 		if (about.universityName) {
@@ -458,6 +466,7 @@ export class ProfileComponent {
 		void this.schools.load();
 		void this._universities.load();
 		void this._loadSchool();
+		void this.profiles.whenLoaded().catch(() => this.profileFailed.set(true));
 	}
 
 	protected async requestTeacher() {
@@ -483,7 +492,21 @@ export class ProfileComponent {
 		this.error.set(false);
 
 		try {
-			await this.schools.choose(user, this.school(), this.profiles.isMinor());
+			// the age decides how much of the person the school page shows, so the profile must be read first
+			const about = await this.profiles.whenLoaded();
+			const slug = this.school();
+
+			this.profileFailed.set(false);
+			await this.schools.choose(user, slug, this.profiles.isMinor());
+
+			// a school from the list replaces the one the person typed in the onboarding
+			if (slug && about?.schoolName) {
+				await this.profiles.save(
+					{ ...this.profiles.answersOf(about), schoolName: '', schoolCity: '' },
+					about.onboarded,
+				);
+			}
+
 			this.schoolSaved.set(true);
 		} catch {
 			this.error.set(true);

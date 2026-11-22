@@ -1,7 +1,7 @@
 import { inject, Service, signal } from '@angular/core';
 import type { Teacher } from '../edudb/edudb.data';
 import type { TeacherRequest } from '../edudb/edudb.models';
-import { slugify } from '../edudb/slug';
+import { freeSlug, SLUG_PATTERN, slugify } from '../edudb/slug';
 import { FirebaseService } from '../firebase/firebase.service';
 import { TeachersService } from '../teachers/teachers.service';
 
@@ -52,14 +52,14 @@ export class AccessService {
 		if (!db) return;
 
 		const { doc, getDoc, serverTimestamp, writeBatch } = await import('firebase/firestore');
-		const base =
-			slugify(request.displayName || request.email.split('@')[0]) ||
-			`teacher-${request.uid.slice(0, 6).toLowerCase()}`;
-		let slug = base;
-
-		for (let n = 2; (await getDoc(doc(db, 'edudb_teachers', slug))).exists(); n++) {
-			slug = `${base}-${n}`;
-		}
+		const name = slugify(request.displayName || request.email.split('@')[0]);
+		// a name of one letter, or of no Latin or Cyrillic letters at all, gives no slug the rules accept
+		const base = SLUG_PATTERN.test(name)
+			? name
+			: `teacher-${slugify(request.uid).slice(0, 6) || 'new'}`;
+		const slug = await freeSlug(base, async (candidate) =>
+			(await getDoc(doc(db, 'edudb_teachers', candidate))).exists(),
+		);
 
 		const teacher: Omit<Teacher, 'slug'> = {
 			uid: request.uid,

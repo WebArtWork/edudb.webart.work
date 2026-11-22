@@ -90,6 +90,16 @@ const EMPTY: University = { slug: '', name: '', city: '' };
 						Something went wrong. Please try again.
 					</p>
 				}
+				@if (renamed(); as slug) {
+					<p
+						class="text-sm font-semibold text-[var(--c-text-muted)]"
+						role="status"
+						[translate]="'That slug was taken, so it was saved as #{{slug}}.'"
+						[vars]="{ slug }"
+					>
+						That slug was taken, so it was saved as #{{ slug }}.
+					</p>
+				}
 			</form>
 
 			<h2
@@ -159,6 +169,8 @@ export class AdminUniversitiesComponent {
 	protected readonly busy = signal(false);
 	protected readonly error = signal(false);
 	protected readonly confirming = signal('');
+	/** The slug a new entry was saved under when the one typed was taken, or empty. */
+	protected readonly renamed = signal('');
 	protected readonly valid = computed(() => {
 		const draft = this.draft();
 
@@ -194,16 +206,22 @@ export class AdminUniversitiesComponent {
 
 		this.busy.set(true);
 		this.error.set(false);
+		this.renamed.set('');
 
 		try {
 			const draft = this.draft();
+			const creating = !this.editing();
 
-			await this.universities.save({
-				slug: draft.slug,
-				name: draft.name.trim(),
-				city: draft.city.trim(),
-			});
+			const slug = await this.universities.save(
+				{
+					slug: draft.slug,
+					name: draft.name.trim(),
+					city: draft.city.trim(),
+				},
+				creating,
+			);
 			this.reset();
+			this.renamed.set(creating && slug !== draft.slug ? slug : '');
 		} catch {
 			this.error.set(true);
 		} finally {

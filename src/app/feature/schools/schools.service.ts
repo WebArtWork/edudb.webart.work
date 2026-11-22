@@ -1,5 +1,6 @@
 import { inject, Service, signal } from '@angular/core';
 import type { School, Student } from '../edudb/edudb.models';
+import { freeSlug } from '../edudb/slug';
 import { FirebaseService } from '../firebase/firebase.service';
 
 /** The schools (Firestore: edudb_schools) and the people who chose them (edudb_users). */
@@ -25,15 +26,23 @@ export class SchoolsService {
 		return this.load();
 	}
 
-	/** Admin: creates the school or updates it. The slug is the document id. */
-	async save(school: School): Promise<void> {
+	/**
+	 * Admin: creates the school or updates it. The slug is the document id. A new school whose slug is taken
+	 * gets the next free one (`kp-7-2`), so it never overwrites another school. Returns the slug it was saved under.
+	 */
+	async save(school: School, create = false): Promise<string> {
 		const db = await this._firebase.firestore();
 
-		if (!db) return;
+		if (!db) return school.slug;
 
-		const { doc, serverTimestamp, setDoc } = await import('firebase/firestore');
+		const { doc, getDoc, serverTimestamp, setDoc } = await import('firebase/firestore');
+		const slug = create
+			? await freeSlug(school.slug, async (candidate) =>
+					(await getDoc(doc(db, 'edudb_schools', candidate))).exists(),
+				)
+			: school.slug;
 
-		await setDoc(doc(db, 'edudb_schools', school.slug), {
+		await setDoc(doc(db, 'edudb_schools', slug), {
 			name: school.name,
 			city: school.city,
 			description: school.description,
@@ -41,15 +50,32 @@ export class SchoolsService {
 			updatedAt: serverTimestamp(),
 		});
 		await this.reload();
+
+		return slug;
 	}
 
-	/** Admin: removes the school. */
+	/** Admin: removes the school, and takes the people who chose it off it, so none of them points at nothing. */
 	async remove(slug: string): Promise<void> {
 		const db = await this._firebase.firestore();
 
 		if (!db) return;
 
-		const { deleteDoc, doc } = await import('firebase/firestore');
+		const { collection, deleteDoc, doc, getDocs, query, serverTimestamp, where, writeBatch } =
+			await import('firebase/firestore');
+		const students = await getDocs(
+			query(collection(db, 'edudb_users'), where('schoolSlug', '==', slug)),
+		);
+
+		// a batch holds at most 500 writes
+		for (let start = 0; start < students.docs.length; start += 500) {
+			const batch = writeBatch(db);
+
+			for (const student of students.docs.slice(start, start + 500)) {
+				batch.update(student.ref, { schoolSlug: '', updatedAt: serverTimestamp() });
+			}
+
+			await batch.commit();
+		}
 
 		await deleteDoc(doc(db, 'edudb_schools', slug));
 		await this.reload();
@@ -124,6 +150,8 @@ export class SchoolsService {
 			this.failed.set(false);
 		} catch {
 			this.failed.set(true);
+			// the next load tries again
+			this._loading = null;
 		} finally {
 			this.loaded.set(true);
 		}

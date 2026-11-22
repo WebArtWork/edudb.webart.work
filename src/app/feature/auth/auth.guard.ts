@@ -68,20 +68,33 @@ export const directorGuard: CanActivateFn = async () => {
 	return roles.directorSchool() ? true : router.parseUrl('/profile');
 };
 
-/** The profile opens only after the onboarding is done; until then the person goes to the onboarding. */
+/**
+ * The profile opens only after the onboarding is done; until then the person goes to the onboarding.
+ * When the profile could not be read the person stays on the profile: the onboarding would overwrite it.
+ */
 export const onboardedGuard: CanActivateFn = async () => {
 	const profiles = inject(ProfileService);
 	const router = inject(Router);
-	const profile = await profiles.whenLoaded();
 
-	return profile?.onboarded ? true : router.parseUrl('/onboarding');
+	try {
+		const profile = await profiles.whenLoaded();
+
+		return profile?.onboarded ? true : router.parseUrl('/onboarding');
+	} catch {
+		return true;
+	}
 };
 
-/** The onboarding is shown once: someone who finished it goes to the profile. */
+/** The onboarding is shown once: someone who finished it, or whose profile could not be read, goes to the profile. */
 export const notOnboardedGuard: CanActivateFn = async () => {
 	const profiles = inject(ProfileService);
 	const router = inject(Router);
-	const profile = await profiles.whenLoaded();
 
-	return profile?.onboarded ? router.parseUrl('/profile') : true;
+	try {
+		const profile = await profiles.whenLoaded();
+
+		return profile?.onboarded ? router.parseUrl('/profile') : true;
+	} catch {
+		return router.parseUrl('/profile');
+	}
 };
