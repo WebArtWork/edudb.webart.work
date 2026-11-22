@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en" data-startup-language="en">
+	<head>
+		<meta charset="utf-8" />
+		<title>EduDB: teachers and education apps</title>
+		<base href="/" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<script>
+			try {
+				const storedMode = localStorage.getItem('theme.mode');
+				const preferredMode =
+					storedMode === 'dark' || storedMode === 'light' ? storedMode : 'light';
+				localStorage.setItem('theme.mode', preferredMode);
+				document.documentElement.setAttribute('data-mode', preferredMode);
+			} catch {}
+		</script>
+
+		<meta
+			name="description"
+			content="Find apps and teachers by subject, and compare scores across EduDB apps."
+		/>
+		<meta name="author" content="EduDB" />
+		<meta name="robots" content="index, follow" />
+		<!-- Light --c-bg-primary (the page background); the app updates it to the active mode. -->
+		<meta name="theme-color" content="#f8f5ee" />
+
+		<meta itemprop="name" content="EduDB" />
+		<meta
+			itemprop="description"
+			content="Find apps and teachers by subject, and compare scores across EduDB apps."
+		/>
+		<meta itemprop="image" content="https://edudb.webart.work/social/home.jpg" />
+
+		<meta property="og:type" content="website" />
+		<meta property="og:site_name" content="EduDB" />
+		<meta property="og:locale" content="en_US" />
+		<meta property="og:url" content="https://edudb.webart.work/" />
+		<meta property="og:title" content="EduDB: teachers and education apps" />
+		<meta
+			property="og:description"
+			content="Find apps and teachers by subject, and compare scores across EduDB apps."
+		/>
+		<meta property="og:image" content="https://edudb.webart.work/social/home.jpg" />
+
+		<meta name="twitter:card" content="summary_large_image" />
+		<meta name="twitter:title" content="EduDB: teachers and education apps" />
+		<meta
+			name="twitter:description"
+			content="Find apps and teachers by subject, and compare scores across EduDB apps."
+		/>
+		<meta name="twitter:image" content="https://edudb.webart.work/social/home.jpg" />
+		<meta name="twitter:image:src" content="https://edudb.webart.work/social/home.jpg" />
+
+		<link rel="canonical" href="https://edudb.webart.work/" />
+		<link rel="icon" type="image/png" href="favicon.png" />
+
+		<!-- Startup screen (ngx-ui provideStartup): decide before first paint whether to cover the page. -->
+		<script>
+			(function () {
+				var root = document.documentElement;
+				var show = root.getAttribute('data-startup') === 'always';
+				if (!show) {
+					try {
+						// ngx-translate saves the language through the ngx-core store, which prefixes keys
+						// with 'waStore' by default (provideNgxCore({ store: { prefix } })).
+						// no saved choice means Ukrainian (environment.initialLanguage), while the prerendered text is English
+						var language = localStorage.getItem('waStoretranslate.language') || 'ua';
+						var base = root.getAttribute('data-startup-language');
+						show = !!language && !!base && language !== base;
+					} catch (e) {}
+				}
+				if (show) {
+					root.classList.add('wstartup-pending');
+					// Safety net in case the app bundle never starts.
+					setTimeout(function () {
+						root.classList.remove('wstartup-pending');
+					}, 15000);
+				}
+			})();
+		</script>
+	</head>
+	<body>
+		<div id="wstartup" class="wstartup" role="status" aria-live="polite">
+			<div class="wstartup__content">
+				<img class="wstartup__logo" src="logo.png" alt="" width="64" height="64" />
+				<svg class="wstartup__spinner" viewBox="0 0 50 50" aria-hidden="true">
+					<circle
+						class="wstartup__track"
+						cx="25"
+						cy="25"
+						r="20"
+						fill="none"
+						stroke-width="4"
+					></circle>
+					<circle
+						class="wstartup__arc"
+						cx="25"
+						cy="25"
+						r="20"
+						fill="none"
+						stroke-width="4"
+					></circle>
+				</svg>
+				<span class="wstartup__label">Завантаження</span>
+			</div>
+		</div>
+		<app-root></app-root>
+	</body>
+</html>

@@ -1,0 +1,13 @@
+{
+	"_id": "",
+	"name": "EduDB",
+	"title": "EduDB: teachers and education apps",
+	"description": "Find apps and teachers by subject, and compare scores across EduDB apps.",
+	"image": "/social/home.jpg",
+	"siteUrl": "https://edudb.webart.work",
+	"locale": "en_US",
+	"logo": "/logo.png",
+	"defaultSeo": {
+		"twitterCard": "summary_large_image"
+	}
+}

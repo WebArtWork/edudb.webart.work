@@ -1,0 +1,102 @@
+<a class="skip-link theme-focus" href="#main-content"
+	(click)="$event.preventDefault(); skipRequested.emit()" translate>Skip to content</a>
+<header class="site-header">
+	<div id="site-navigation" class="site-header-inner">
+		<a
+			class="wordmark theme-focus"
+			routerLink="/"
+			routerLinkActive="is-current"
+			[routerLinkActiveOptions]="{ exact: true }"
+			ariaCurrentWhenActive="page"
+			aria-label="Go to the home page"
+			[translate]="{
+				ariaLabel: 'Go to the home page',
+				title: sidebarCollapsed() ? 'Go to the home page' : '',
+			}"
+		>
+			<img ngSrc="logo.png" width="36" height="36" alt="" priority />
+			<span class="site-wordmark-label">EduDB</span>
+		</a>
+
+		<nav
+			class="site-nav"
+			aria-label="Main navigation"
+			[translate]="{ ariaLabel: 'Main navigation' }"
+		>
+			<ul>
+				@for (link of navLinks; track link.path) {
+					<li>
+						<a
+							class="site-nav-link theme-interactive theme-focus"
+							routerLinkActive="is-active"
+							ariaCurrentWhenActive="page"
+							[routerLink]="link.path"
+							[translate]="{ title: sidebarCollapsed() ? link.label : '' }"
+						>
+							<span
+								class="material-symbols-outlined site-nav-icon"
+								aria-hidden="true"
+								>{{ link.icon }}</span
+							>
+							<span class="site-nav-label" [translate]="link.label">{{ link.label }}</span>
+						</a>
+					</li>
+				}
+			</ul>
+		</nav>
+
+		<div class="site-controls">
+			<button
+				class="site-control site-preference theme-focus"
+				type="button"
+				(click)="toggleLanguage()"
+				aria-label="Switch to Ukrainian"
+				[translate]="{
+					ariaLabel: language() === 'ua' ? 'Switch to English' : 'Switch to Ukrainian',
+				}"
+			>
+				<span [attr.lang]="language() === 'ua' ? 'en' : 'uk'">{{
+					language() === 'ua' ? 'EN' : 'УК'
+				}}</span>
+			</button>
+			<button
+				class="site-control site-preference theme-focus"
+				type="button"
+				(click)="toggleTheme()"
+				aria-label="Switch to dark theme"
+				[translate]="{
+					ariaLabel: mode() === 'dark' ? 'Switch to light theme' : 'Switch to dark theme',
+				}"
+			>
+				<span class="material-symbols-outlined" aria-hidden="true">{{
+					mode() === 'dark' ? 'light_mode' : 'dark_mode'
+				}}</span>
+			</button>
+			<a
+				class="site-control site-profile theme-focus"
+				routerLink="/profile"
+				routerLinkActive="is-active"
+				ariaCurrentWhenActive="page"
+				aria-label="Profile"
+				[translate]="{ ariaLabel: 'Profile', title: sidebarCollapsed() ? 'Profile' : '' }"
+			>
+				<span class="material-symbols-outlined" aria-hidden="true">account_circle</span>
+				<span class="site-profile-label" translate>Profile</span>
+			</a>
+			@let sidebarAction = sidebarCollapsed() ? 'Expand sidebar' : 'Collapse sidebar';
+			<button
+				class="site-control site-sidebar-toggle theme-focus"
+				type="button"
+				aria-label="Collapse sidebar"
+				aria-controls="site-navigation"
+				[attr.aria-expanded]="!sidebarCollapsed()"
+				[translate]="{ ariaLabel: sidebarAction, title: sidebarAction }"
+				(click)="sidebarCollapsed.set(!sidebarCollapsed())"
+			>
+				<span class="material-symbols-outlined" aria-hidden="true">{{
+					sidebarCollapsed() ? 'chevron_right' : 'chevron_left'
+				}}</span>
+			</button>
+		</div>
+	</div>
+</header>

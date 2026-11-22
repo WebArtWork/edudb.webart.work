@@ -1,0 +1,77 @@
+@if (appSlugs().length === 0) {
+	<p class="text-[var(--c-text-muted)]" translate>
+		No ranking yet. Points appear once an app has players.
+	</p>
+} @else {
+	<div
+		class="overflow-x-auto rounded-[var(--radius-card)] border border-[var(--c-border)] bg-[var(--c-bg-secondary)]"
+	>
+		<table class="rank-table w-full border-collapse text-sm tabular-nums">
+			<caption
+				class="border-b border-[var(--c-border)] px-4 py-3 text-left font-semibold text-[var(--c-text-strong)]"
+				[translate]="caption()"
+				[vars]="captionVars()"
+			>
+				{{
+					caption()
+				}}
+			</caption>
+			<thead>
+				<tr class="text-xs uppercase tracking-wider text-[var(--c-text-muted)]">
+					<th scope="col" class="w-px px-4 py-2 text-left" translate>Rank</th>
+					<th scope="col" class="px-4 py-2 text-left" translate>Player</th>
+					@if (showColumns()) {
+						@for (name of appNames(); track name) {
+							<th scope="col" class="px-4 py-2 text-right" [translate]="name">
+								{{ name }}
+							</th>
+						}
+					}
+					@if (showPlayed()) {
+						<th scope="col" class="px-4 py-2 text-right" translate>Apps played</th>
+					}
+					<th scope="col" class="px-4 py-2 text-right" translate>Points</th>
+				</tr>
+			</thead>
+			<tbody>
+				@for (row of rows(); track row.player; let i = $index) {
+					<tr class="border-t border-[var(--c-border)]">
+						<td
+							class="px-4 py-2.5 font-extrabold"
+							[class.text-[var(--c-primary)]]="i < 3"
+						>
+							{{ i + 1 }}
+						</td>
+						<th
+							scope="row"
+							class="px-4 py-2.5 text-left font-semibold text-[var(--c-text-strong)]"
+						>
+							<span class="flex items-center gap-2.5">
+								<span
+									class="rank-avatar grid h-8 w-8 flex-none place-items-center rounded-full text-xs font-bold text-white"
+									[style.background]="'hsl(' + hue(row.player) + ' 55% 38%)'"
+									aria-hidden="true"
+								>
+									{{ row.player[0].toUpperCase() }}
+								</span>
+								{{ row.player }}
+							</span>
+						</th>
+						@if (showColumns()) {
+							@for (value of row.perApp; track $index) {
+								<td class="px-4 py-2.5 text-right">{{ value }}</td>
+							}
+						}
+						@if (showPlayed()) {
+							<td class="px-4 py-2.5 text-right">{{ row.appsPlayed }}</td>
+						}
+						<td class="px-4 py-2.5 text-right font-bold text-[var(--c-text-strong)]">
+							{{ row.total }}
+						</td>
+					</tr>
+				}
+			</tbody>
+		</table>
+	</div>
+	<p class="mt-2 text-sm text-[var(--c-text-muted)]" translate>Sample players and points.</p>
+}

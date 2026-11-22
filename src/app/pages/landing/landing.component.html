@@ -1,0 +1,86 @@
+<div class="directory-page home-page">
+	<section aria-labelledby="hero-title" class="home-intro">
+		<div class="home-intro-copy">
+			<h1 id="hero-title" class="home-title" translate>
+				Find teachers and apps for what you want to learn
+			</h1>
+			<p class="home-lede" translate>
+				Browse by subject, from school maths and physics to coding and cooking.
+			</p>
+			<div class="home-actions">
+				<a class="action-link theme-focus" routerLink="/categories">
+					<span translate>Browse categories</span>
+					<span class="material-symbols-outlined" aria-hidden="true">arrow_forward</span>
+				</a>
+				<a class="text-link theme-focus" routerLink="/teachers" translate
+					>Meet the teachers</a
+				>
+			</div>
+		</div>
+		<picture class="home-photo">
+			<img
+				ngSrc="images/library.webp"
+				width="760"
+				height="500"
+				sizes="(max-width: 760px) 100vw, 48vw"
+				alt=""
+				priority
+			/>
+		</picture>
+	</section>
+
+	<section class="home-categories" aria-labelledby="home-categories">
+		<div class="section-heading">
+			<h2 id="home-categories" translate>Browse by subject</h2>
+			<a class="text-link theme-focus" routerLink="/categories" translate>All categories</a>
+		</div>
+		@for (group of groups; track group.label) {
+			<h3 class="catalog-group" [translate]="group.label">{{ group.label }}</h3>
+			<ul class="catalog-grid">
+				@for (category of group.categories; track category.slug) {
+					<li><app-category-card [category]="category" /></li>
+				}
+			</ul>
+		}
+	</section>
+
+	<section class="home-apps" aria-labelledby="home-apps">
+		<div class="section-heading">
+			<h2 id="home-apps" translate>Education apps</h2>
+			<a class="text-link theme-focus" routerLink="/apps" translate>All apps</a>
+		</div>
+		<ul class="catalog-grid">
+			@for (app of featuredApps; track app.slug) {
+				<li><app-app-card [app]="app" /></li>
+			}
+		</ul>
+	</section>
+
+	<section class="home-teachers" aria-labelledby="home-teachers">
+		<div class="section-heading">
+			<h2 id="home-teachers" translate>Teachers</h2>
+			<a class="text-link theme-focus" routerLink="/teachers" translate>All teachers</a>
+		</div>
+		@if (featuredTeachers().length) {
+			<ul class="catalog-grid">
+				@for (teacher of featuredTeachers(); track teacher.slug) {
+					<li><app-teacher-card [teacher]="teacher" /></li>
+				}
+			</ul>
+		} @else if (teachers.failed()) {
+			<p translate>Teachers couldn’t be loaded.</p>
+		} @else if (teachers.loaded()) {
+			<p translate>No teachers yet.</p>
+		} @else {
+			<p translate>Loading teachers…</p>
+		}
+	</section>
+
+	<section class="home-ranking" aria-labelledby="home-ranking">
+		<div class="section-heading">
+			<h2 id="home-ranking" translate>Top players</h2>
+			<a class="text-link theme-focus" routerLink="/rankings" translate>Full ranking</a>
+		</div>
+		<app-rank-table [appSlugs]="allAppSlugs" [limit]="5" caption="Overall ranking, top 5" />
+	</section>
+</div>
