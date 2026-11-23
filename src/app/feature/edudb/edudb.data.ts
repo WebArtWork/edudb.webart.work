@@ -174,6 +174,20 @@ export const apps: EduApp[] = [
 
 export const categories: Category[] = [
 	{
+		slug: 'ukrainian',
+		name: 'Ukrainian language',
+		group: 'school',
+		tagline: 'Grammar, spelling and writing in Ukrainian.',
+		desc: 'Ukrainian grammar and writing practice for school and the national exam.',
+	},
+	{
+		slug: 'english',
+		name: 'English language',
+		group: 'school',
+		tagline: 'Grammar, vocabulary and speaking in English.',
+		desc: 'English lessons from school basics to fluent speaking and exams.',
+	},
+	{
 		slug: 'maths',
 		name: 'Maths',
 		group: 'school',
@@ -188,6 +202,13 @@ export const categories: Category[] = [
 		desc: 'Lessons and theory sites for physics and mechanics, plus a teacher for the hard topics.',
 	},
 	{
+		slug: 'chemistry',
+		name: 'Chemistry',
+		group: 'school',
+		tagline: 'Elements, reactions and the lab.',
+		desc: 'School chemistry from the periodic table to reactions and exam problems.',
+	},
+	{
 		slug: 'biology',
 		name: 'Biology',
 		group: 'school',
@@ -195,11 +216,25 @@ export const categories: Category[] = [
 		desc: 'Core biology for school and exams.',
 	},
 	{
-		slug: 'languages',
-		name: 'Languages',
+		slug: 'astronomy',
+		name: 'Astronomy',
 		group: 'school',
-		tagline: 'Speak, read and write a new language.',
-		desc: 'Daily practice and coaching for foreign languages.',
+		tagline: 'Stars, planets and the universe.',
+		desc: 'How the sky, the solar system and the universe work.',
+	},
+	{
+		slug: 'history',
+		name: 'History',
+		group: 'school',
+		tagline: 'Ukrainian and world history.',
+		desc: 'Key events, dates and causes in Ukrainian and world history.',
+	},
+	{
+		slug: 'geography',
+		name: 'Geography',
+		group: 'school',
+		tagline: 'Countries, maps and the planet.',
+		desc: 'Physical and economic geography of Ukraine and the world.',
 	},
 	{
 		slug: 'chess',

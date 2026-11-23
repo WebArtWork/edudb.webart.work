@@ -1,5 +1,5 @@
 import { DOCUMENT, isPlatformBrowser } from '@angular/common';
-import { Component, effect, inject, PLATFORM_ID, signal } from '@angular/core';
+import { Component, effect, inject, PLATFORM_ID } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { CanonicalService } from '@wawjs/ngx-default';
 import { LanguageService } from '@wawjs/ngx-translate';
@@ -13,11 +13,8 @@ import { TopbarComponent } from './layouts/topbar/topbar.component';
 	selector: 'app-root',
 	imports: [RouterOutlet, TopbarComponent, FooterComponent],
 	template: `
-		<div class="site-shell" [class.site-shell-collapsed]="sidebarCollapsed()">
-			<app-topbar
-				[(sidebarCollapsed)]="sidebarCollapsed"
-				(skipRequested)="mainContent.focus()"
-			/>
+		<div class="site-shell">
+			<app-topbar (skipRequested)="mainContent.focus()" />
 			<main #mainContent id="main-content" class="site-main" tabindex="-1">
 				<router-outlet />
 			</main>
@@ -26,8 +23,6 @@ import { TopbarComponent } from './layouts/topbar/topbar.component';
 	`,
 })
 export class App {
-	protected readonly sidebarCollapsed = signal(false);
-
 	private readonly _canonicalService = inject(CanonicalService);
 	private readonly _companySeoService = inject(CompanySeoService);
 	private readonly _document = inject(DOCUMENT);
