@@ -22,6 +22,7 @@ export class FooterComponent {
 		{ label: 'Schools', path: '/schools' },
 		{ label: 'Apps', path: '/apps' },
 		{ label: 'Ranking', path: '/rankings' },
+		{ label: 'Ranking rules', path: '/ranking-rules' },
 		{ label: 'Profile', path: '/profile' },
 	]);
 }

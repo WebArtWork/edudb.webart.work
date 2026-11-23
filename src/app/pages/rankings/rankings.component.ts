@@ -1,11 +1,12 @@
 import { Component } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { TranslateDirective } from '@wawjs/ngx-translate';
 import { RankTableComponent } from '../../components/rank-table/rank-table.component';
 import { TagLinksComponent, type TagLink } from '../../components/tag-links/tag-links.component';
 import { apps, categories } from '../../feature/edudb/edudb.data';
 
 @Component({
-	imports: [RankTableComponent, TagLinksComponent, TranslateDirective],
+	imports: [RankTableComponent, RouterLink, TagLinksComponent, TranslateDirective],
 	template: `
 		<div class="directory-page">
 			<p
@@ -23,6 +24,15 @@ import { apps, categories } from '../../feature/edudb/edudb.data';
 			<p class="mt-4 max-w-[60ch] text-xl text-[var(--c-text-muted)]" translate>
 				Every app awards points. Points add up in the category of the app and in the overall
 				ranking.
+			</p>
+			<p class="mt-3">
+				<a
+					class="font-semibold text-[var(--c-primary)] underline underline-offset-4"
+					routerLink="/ranking-rules"
+					translate
+				>
+					How we calculate the ranking
+				</a>
 			</p>
 			<div class="mt-8">
 				<app-rank-table

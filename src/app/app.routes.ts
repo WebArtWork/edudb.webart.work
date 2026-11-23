@@ -119,6 +119,24 @@ export const routes: Routes = [
 			import('./pages/rankings/rankings.component').then((m) => m.RankingsComponent),
 	},
 	{
+		path: 'ranking-rules',
+		data: {
+			meta: {
+				...page(
+					'/ranking-rules',
+					'Ranking rules',
+					'How EduDB compares learners across very different apps: app ratings, share of players and app size.',
+				).meta,
+				// shares the ranking preview image
+				image: buildAbsoluteUrl(companyProfile.siteUrl, '/social/rankings.jpg'),
+			},
+		},
+		loadComponent: () =>
+			import('./pages/ranking-rules/ranking-rules.component').then(
+				(m) => m.RankingRulesComponent,
+			),
+	},
+	{
 		path: 'admin/access',
 		canActivate: [adminGuard],
 		data: {
