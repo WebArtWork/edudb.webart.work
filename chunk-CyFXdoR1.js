@@ -1,0 +1,1 @@
+var r={coder:`software`,realestate:`real-estate`,trainup:`fitness`};var s={ukrainian:`languages`,english:`languages`,chemistry:`physics`,astronomy:`physics`,history:`library`,geography:`library`};function e(t){return`images/${s[t]??t}.webp`}function n(t){return e(r[t]??t)}export{n,e as t};
